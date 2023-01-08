@@ -42,6 +42,9 @@ public class PlaylistNodePrimaryIndex extends PlaylistNode {
 	}
 	
 	// Extra functions if needed
-
+	public ArrayList<Integer> getAllAudioIds()
+	{
+		return this.audioIds;
+	}
 
 }

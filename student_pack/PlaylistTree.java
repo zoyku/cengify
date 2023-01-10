@@ -45,6 +45,7 @@ public class PlaylistTree {
 		for (int index = 0; index <= insert_leaf.songCount() ; index++) {
 			if(insert_leaf.audioIdAtIndex(index) == -1){
 				insert_index = index;
+				break;
 			}
 			if (insert_leaf.audioIdAtIndex(index) > song.audioId())
 			{
@@ -91,6 +92,7 @@ public class PlaylistTree {
 					if( (node_parent).audioIdAtIndex(index) == -1){
 						node_parent.getAllAudioIds().add(id_to_copy_up);
 						node_parent.getAllChildren().add(new_leaf);
+						break;
 					}
 					if( (node_parent).audioIdAtIndex(index) > id_to_copy_up)
 					{
@@ -122,15 +124,16 @@ public class PlaylistTree {
 						new_internal_node.getAllChildren().add(new_index,node_parent.getChildrenAt(node_parent.audioIdCount()));
 						node_parent.getChildrenAt(node_parent.audioIdCount()).setParent(new_internal_node);
 
+						int id_to_push_up = node_parent.audioIdAtIndex(order); // take the middle element id of the old internal node
+
 						// removing the copied audio ids and children
-						for(int old_index = order; old_index < node_parent.audioIdCount(); old_index++){
+						int node_count = node_parent.audioIdCount();
+						for(int old_index = order; old_index < node_count; old_index++){
 							node_parent.getAllAudioIds().remove(order);
 						}
-						for(int old_index = order+1; old_index <= node_parent.audioIdCount(); old_index++){
-							node_parent.getAllChildren().remove(order);
+						for(int old_index = order+1; old_index <= node_count; old_index++){
+							node_parent.getAllChildren().remove(order+1);
 						}
-
-						int id_to_push_up = new_internal_node.audioIdAtIndex(0); // take the first id of the new internal node
 
 						PlaylistNodePrimaryIndex node_up_parent = (PlaylistNodePrimaryIndex) up_parent;
 
@@ -139,6 +142,7 @@ public class PlaylistTree {
 							if( node_up_parent.audioIdAtIndex(index) == -1){
 								node_up_parent.getAllAudioIds().add(id_to_push_up);
 								node_up_parent.getAllChildren().add(new_internal_node);
+								break;
 							}
 							if( node_up_parent.audioIdAtIndex(index) > id_to_push_up)
 							{
@@ -168,15 +172,16 @@ public class PlaylistTree {
 						new_internal_node.getAllChildren().add(new_index,node_parent.getChildrenAt(node_parent.audioIdCount()));
 						node_parent.getChildrenAt(node_parent.audioIdCount()).setParent(new_internal_node);
 
+						int id_to_push_up = node_parent.audioIdAtIndex(order); // take the middle element id of the old internal node
+
 						// removing the copied audio ids and children
-						for(int old_index = order; old_index < node_parent.audioIdCount(); old_index++){
+						int node_count = node_parent.audioIdCount();
+						for(int old_index = order; old_index < node_count; old_index++){
 							node_parent.getAllAudioIds().remove(order);
 						}
-						for(int old_index = order+1; old_index <= node_parent.audioIdCount(); old_index++){
-							node_parent.getAllChildren().remove(order);
+						for(int old_index = order+1; old_index <= node_count; old_index++){
+							node_parent.getAllChildren().remove(order+1);
 						}
-
-						int id_to_push_up = new_internal_node.audioIdAtIndex(0); // take the first id of the new internal node
 
 						new_root.getAllAudioIds().add(id_to_push_up);
 						new_root.getAllChildren().add(parent);
@@ -238,7 +243,52 @@ public class PlaylistTree {
 		// TODO: Implement this method
 		// print the primary B+ tree in Depth-first order
 
+		printPrimary(primaryRoot, 0);
+
 		return;
+	}
+
+	private void printPrimary(PlaylistNode node, int tab_count) {
+
+		if (node.getType() == PlaylistNodeType.Leaf){
+			for (int count = 0; count < tab_count; count++) {
+				System.out.print("\t");
+			}
+			System.out.println("<data>");
+			PlaylistNodePrimaryLeaf leaf_node = (PlaylistNodePrimaryLeaf) node;
+			for (int index = 0; index < leaf_node.getSongs().size(); index++){
+				CengSong song = leaf_node.songAtIndex(index);
+				for (int count = 0; count < tab_count; count++) {
+					System.out.print("\t");
+				}
+					System.out.println("<record>"+song.audioId()+"|"+song.genre()+"|"+song.songName()+"|"+song.artist()+"</record>");
+			}
+			for (int count = 0; count < tab_count; count++) {
+				System.out.print("\t");
+			}
+			System.out.println("</data>");
+		}
+		else if (node.getType() != PlaylistNodeType.Leaf){
+			for (int count = 0; count < tab_count; count++) {
+				System.out.print("\t");
+			}
+			System.out.println("<index>");
+			PlaylistNodePrimaryIndex internal_node = (PlaylistNodePrimaryIndex) node;
+			for (int index = 0; index < internal_node.getAllAudioIds().size(); index++){
+				for (int count = 0; count < tab_count; count++) {
+					System.out.print("\t");
+				}
+				System.out.println(internal_node.audioIdAtIndex(index));
+			}
+			for (int count = 0; count < tab_count; count++) {
+				System.out.print("\t");
+			}
+			System.out.println("</index>");
+			tab_count++;
+			for (int index = 0; index < internal_node.getAllChildren().size(); index++) {
+				printPrimary((internal_node.getChildrenAt(index)), tab_count);
+			}
+		}
 	}
 	
 	public void printSecondaryPlaylist() {

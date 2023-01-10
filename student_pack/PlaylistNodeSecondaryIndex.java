@@ -48,6 +48,9 @@ public class PlaylistNodeSecondaryIndex extends PlaylistNode {
 	
 	
 	// Extra functions if needed
-
+	public ArrayList<String> getAllGenres()
+	{
+		return this.genres;
+	}
 
 }

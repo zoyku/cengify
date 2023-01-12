@@ -85,7 +85,7 @@ public class PlaylistTree {
 
 				int id_to_copy_up = new_leaf.audioIdAtIndex(0); // take the first id of the new leaf
 
-				PlaylistNodePrimaryIndex node_parent = (PlaylistNodePrimaryIndex)parent; // cast the type of parent
+				PlaylistNodePrimaryIndex node_parent = (PlaylistNodePrimaryIndex) parent; // cast the type of parent
 
 				// add id and the child to the parent
 				for (int index = 0; index <= (node_parent).audioIdCount(); index++) {
@@ -102,7 +102,7 @@ public class PlaylistTree {
 					}
 				}
 
-				// if number of songs in node is bigger than the possible number of songs, namely overflow
+				// if number of songs in parent node is bigger than the possible number of songs, namely overflow
 				while (node_parent.audioIdCount() > pos_song_number){
 
 					PlaylistNode up_parent = parent.getParent();
@@ -229,7 +229,7 @@ public class PlaylistTree {
 		}
 
 		int order_2 = PlaylistNode.order;
-		int pos_song_number_2 = 2*order_2;
+		int pos_genre_number = 2*order_2;
 
 		PlaylistNode secondary_node = secondaryRoot;
 		int finished_2 = 0;
@@ -275,7 +275,7 @@ public class PlaylistTree {
 			int leaf_genre_count = insert_leaf_2.genreCount();
 
 			// if number of genres in leaf is bigger than the possible number of genres, namely overflow
-			if(leaf_genre_count > pos_song_number_2){
+			if(leaf_genre_count > pos_genre_number){
 
 				PlaylistNode parent = insert_leaf_2.getParent();
 
@@ -316,8 +316,8 @@ public class PlaylistTree {
 					}
 				}
 
-				// if number of songs in node is bigger than the possible number of songs, namely overflow
-				while (node_parent.genreCount() > pos_song_number_2){
+				// if number of genres in parent node is bigger than the possible number of genres, namely overflow
+				while (node_parent.genreCount() > pos_genre_number){
 
 					PlaylistNode up_parent = parent.getParent();
 
@@ -413,8 +413,8 @@ public class PlaylistTree {
 		if(insert_leaf_2.getParent() == null){
 			int leaf_genre_count = insert_leaf_2.genreCount();
 
-			// if number of songs in leaf is bigger than the possible number of songs, namely overflow
-			if (leaf_genre_count > pos_song_number_2){
+			// if number of genres in leaf is bigger than the possible number of genres, namely overflow
+			if (leaf_genre_count > pos_genre_number){
 				PlaylistNodeSecondaryLeaf new_leaf = new PlaylistNodeSecondaryLeaf(null);
 				PlaylistNodeSecondaryIndex new_root = new PlaylistNodeSecondaryIndex(null);
 
@@ -453,6 +453,9 @@ public class PlaylistTree {
 		// TODO: Implement this method
 		// find the song with the searched audioId in primary B+ tree
 		// return value will not be tested, just print according to the specifications
+
+		searchPrimary(audioId, primaryRoot, 0);
+
 		return null;
 	}
 	
@@ -565,6 +568,58 @@ public class PlaylistTree {
 			tab_count++;
 			for (int index = 0; index < internal_node.getAllChildren().size(); index++) {
 				printSecondary((internal_node.getChildrenAt(index)), tab_count);
+			}
+		}
+	}
+
+	private void searchPrimary(Integer audio_id ,PlaylistNode node, int tab_count) {
+
+		if (node.getType() == PlaylistNodeType.Leaf){
+			for (int count = 0; count < tab_count; count++) {
+				System.out.print("\t");
+			}
+			System.out.println("<data>");
+			PlaylistNodePrimaryLeaf leaf_node = (PlaylistNodePrimaryLeaf) node;
+			for (int index = 0; index < leaf_node.getSongs().size(); index++){
+				CengSong song = leaf_node.songAtIndex(index);
+				if(song.audioId() == audio_id){
+					for (int count = 0; count < tab_count; count++) {
+						System.out.print("\t");
+					}
+					System.out.println("<record>"+song.audioId()+"|"+song.genre()+"|"+song.songName()+"|"+song.artist()+"</record>");
+				}
+			}
+			for (int count = 0; count < tab_count; count++) {
+				System.out.print("\t");
+			}
+			System.out.println("</data>");
+		}
+		else if (node.getType() != PlaylistNodeType.Leaf){
+			for (int count = 0; count < tab_count; count++) {
+				System.out.print("\t");
+			}
+			System.out.println("<index>");
+			PlaylistNodePrimaryIndex internal_node = (PlaylistNodePrimaryIndex) node;
+			for (int index = 0; index < internal_node.getAllAudioIds().size(); index++){
+				for (int count = 0; count < tab_count; count++) {
+					System.out.print("\t");
+				}
+				System.out.println(internal_node.audioIdAtIndex(index));
+			}
+			for (int count = 0; count < tab_count; count++) {
+				System.out.print("\t");
+			}
+			System.out.println("</index>");
+			tab_count++;
+			for (int index = 0; index <= internal_node.getAllChildren().size(); index++) {
+				if(internal_node.audioIdAtIndex(index) == -1){
+					searchPrimary(audio_id, internal_node.getChildrenAt(index), tab_count);
+					break;
+				}
+				if(internal_node.audioIdAtIndex(index) > audio_id){
+					searchPrimary(audio_id, internal_node.getChildrenAt(index), tab_count);
+					break;
+				}
 			}
 		}
 	}
